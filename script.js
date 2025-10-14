@@ -1,3 +1,10 @@
+const STORAGE_KEY = "prompts_storage";
+
+const state = {
+  prompts: [],
+  selectedId: null,
+};
+
 // Seleção dos elementos por id
 const elements = {
   promptTitle: document.getElementById("prompt-title"),
@@ -7,6 +14,9 @@ const elements = {
   btnOpen: document.getElementById("btn-open"),
   btnCollapse: document.getElementById("btn-collapse"),
   sidebar: document.querySelector(".sidebar"),
+  btnSave: document.getElementById("btn-save"),
+  list: document.getElementById("prompt-list"),
+  search: document.getElementById("search-input"),
 };
 
 // Atualiza o estado do wrapper conforme o conteúdo do elemento
@@ -35,8 +45,85 @@ function attachAllEditableHandlers() {
   updateAllEditableStates();
 }
 
+function save() {
+  const title = elements.promptTitle.textContent.trim();
+  const content = elements.promptContent.innerHTML.trim();
+  const hasContent = elements.promptContent.textContent.trim();
+
+  if (!title || !hasContent) {
+    alert("Título e conteúdo não podem estar vazios!");
+    return;
+  }
+
+  if (state.selectedId) {
+    //dsad
+  } else {
+    const newPrompt = {
+      id: Date.now().toString(36),
+      title,
+      content,
+    };
+
+    state.prompts.unshift(newPrompt);
+    state.selectedId = newPrompt.id;
+    console.log(state.prompts);
+  }
+
+  persist();
+}
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.prompts));
+    alert("Prompt salvo com sucesso!");
+  } catch (error) {
+    console.log("Erro ao salvar no localStorage: ", error);
+  }
+}
+
+function load() {
+  try {
+    const storage = localStorage.getItem(STORAGE_KEY);
+    state.prompts = storage ? JSON.parse(storage) : [];
+    state.selectedId = null;
+  } catch (error) {
+    console.log("Erro ao carregar do localStorage: ", error);
+  }
+}
+
+function createPromptItem(prompt) {
+  return `
+    <li class="prompt-item">
+      <div class="prompt-item-content">
+        <div class="prompt-item-title">${prompt.title}</div>
+        <div class="prompt-item-description">${prompt.content}</div>
+      </div>
+
+      <button class="btn-icon" title="Remover">
+        <img src="assets/remove.svg" alt="Remover" class="icon icon-trash" />
+      </button>
+    </li>
+ `;
+}
+
+function renderPromptList(filterText = "") {
+  const filteredPrompts = state.prompts
+    .filter((prompt) => prompt.title.toLowerCase().includes(filterText.toLowerCase().trim()))
+    .map((p) => createPromptItem(p))
+    .join("");
+
+  elements.list.innerHTML = filteredPrompts;
+}
+
+elements.btnSave.addEventListener("click", save);
+elements.search.addEventListener("input", function (e) {
+  renderPromptList(e.target.value);
+});
+
 // Função de inicialização
 function init() {
+  load();
+  renderPromptList("");
   attachAllEditableHandlers();
 }
 
