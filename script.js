@@ -17,6 +17,7 @@ const elements = {
   btnSave: document.getElementById("btn-save"),
   list: document.getElementById("prompt-list"),
   search: document.getElementById("search-input"),
+  btnNew: document.getElementById("btn-new"),
 };
 
 // Atualiza o estado do wrapper conforme o conteúdo do elemento
@@ -66,7 +67,12 @@ function save() {
   }
 
   if (state.selectedId) {
-    //dsad
+    const existingPrompt = state.prompts.find((p) => p.id === state.selectedId);
+
+    if (existingPrompt) {
+      existingPrompt.title = title || "Sem título";
+      existingPrompt.content = content || "Sem conteúdo";
+    }
   } else {
     const newPrompt = {
       id: Date.now().toString(36),
@@ -126,9 +132,19 @@ function renderPromptList(filterText = "") {
   elements.list.innerHTML = filteredPrompts;
 }
 
+function newPrompt() {
+  state.selectedId = null;
+  elements.promptTitle.textContent = "";
+  elements.promptContent.innerHTML = "";
+  updateAllEditableStates();
+
+  elements.promptTitle.focus();
+}
+
 elements.btnOpen.addEventListener("click", openSidebar);
 elements.btnCollapse.addEventListener("click", closeSidebar);
 elements.btnSave.addEventListener("click", save);
+elements.btnNew.addEventListener("click", newPrompt);
 
 elements.search.addEventListener("input", function (event) {
   renderPromptList(event.target.value);
