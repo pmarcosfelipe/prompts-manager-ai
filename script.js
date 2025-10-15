@@ -45,6 +45,16 @@ function attachAllEditableHandlers() {
   updateAllEditableStates();
 }
 
+function openSidebar() {
+  elements.sidebar.style.display = "flex";
+  elements.btnOpen.style.display = "none";
+}
+
+function closeSidebar() {
+  elements.sidebar.style.display = "none";
+  elements.btnOpen.style.display = "flex";
+}
+
 function save() {
   const title = elements.promptTitle.textContent.trim();
   const content = elements.promptContent.innerHTML.trim();
@@ -93,13 +103,13 @@ function load() {
 
 function createPromptItem(prompt) {
   return `
-    <li class="prompt-item">
+    <li class="prompt-item" data-id="${prompt.id}" data-action="select">
       <div class="prompt-item-content">
         <div class="prompt-item-title">${prompt.title}</div>
         <div class="prompt-item-description">${prompt.content}</div>
       </div>
 
-      <button class="btn-icon" title="Remover">
+      <button class="btn-icon" title="Remover" data-action="remove">
         <img src="assets/remove.svg" alt="Remover" class="icon icon-trash" />
       </button>
     </li>
@@ -115,9 +125,37 @@ function renderPromptList(filterText = "") {
   elements.list.innerHTML = filteredPrompts;
 }
 
+elements.btnOpen.addEventListener("click", openSidebar);
+elements.btnCollapse.addEventListener("click", closeSidebar);
 elements.btnSave.addEventListener("click", save);
-elements.search.addEventListener("input", function (e) {
-  renderPromptList(e.target.value);
+
+elements.search.addEventListener("input", function (event) {
+  renderPromptList(event.target.value);
+});
+
+elements.list.addEventListener("click", function (event) {
+  const removeBtn = event.target.closest("[data-action='remove']");
+  const item = event.target.closest("[data-id]");
+
+  if (!item) return;
+
+  const id = item.getAttribute("data-id");
+
+  if (removeBtn) {
+    // remove
+    return;
+  }
+
+  if (event.target.closest("[data-action='select']")) {
+    const prompt = state.prompts.find((p) => p.id === id);
+
+    if (prompt) {
+      elements.promptTitle.textContent = prompt.title;
+      elements.promptContent.innerHTML = prompt.content;
+      state.selectedId = prompt.id;
+      updateAllEditableStates();
+    }
+  }
 });
 
 // Função de inicialização
@@ -125,23 +163,8 @@ function init() {
   load();
   renderPromptList("");
   attachAllEditableHandlers();
+  openSidebar();
 }
 
 // Executa a inicialização ao carregar o script
 init();
-
-function openSidebar() {
-  elements.sidebar.style.display = "flex";
-  elements.btnOpen.style.display = "none";
-}
-
-function closeSidebar() {
-  elements.sidebar.style.display = "none";
-  elements.btnOpen.style.display = "flex";
-}
-
-elements.btnOpen.addEventListener("click", openSidebar);
-elements.btnCollapse.addEventListener("click", closeSidebar);
-
-// Inicializa o estado da sidebar (aberta por padrão)
-openSidebar();
