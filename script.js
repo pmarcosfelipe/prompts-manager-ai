@@ -79,13 +79,14 @@ function save() {
     console.log(state.prompts);
   }
 
+  renderPromptList(elements.search.value);
   persist();
+  alert("Prompt salvo com sucesso!");
 }
 
 function persist() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.prompts));
-    alert("Prompt salvo com sucesso!");
   } catch (error) {
     console.log("Erro ao salvar no localStorage: ", error);
   }
@@ -142,7 +143,10 @@ elements.list.addEventListener("click", function (event) {
   const id = item.getAttribute("data-id");
 
   if (removeBtn) {
-    // remove
+    state.prompts = state.prompts.filter((p) => p.id !== id);
+    renderPromptList(elements.search.value);
+    persist();
+
     return;
   }
 
