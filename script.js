@@ -18,6 +18,7 @@ const elements = {
   list: document.getElementById("prompt-list"),
   search: document.getElementById("search-input"),
   btnNew: document.getElementById("btn-new"),
+  btnCopy: document.getElementById("btn-copy"),
 };
 
 // Atualiza o estado do wrapper conforme o conteúdo do elemento
@@ -47,13 +48,13 @@ function attachAllEditableHandlers() {
 }
 
 function openSidebar() {
-  elements.sidebar.style.display = "flex";
-  elements.btnOpen.style.display = "none";
+  elements.sidebar.classList.add("open");
+  elements.sidebar.classList.remove("collapsed");
 }
 
 function closeSidebar() {
-  elements.sidebar.style.display = "none";
-  elements.btnOpen.style.display = "flex";
+  elements.sidebar.classList.remove("open");
+  elements.sidebar.classList.add("collapsed");
 }
 
 function save() {
@@ -82,7 +83,6 @@ function save() {
 
     state.prompts.unshift(newPrompt);
     state.selectedId = newPrompt.id;
-    console.log(state.prompts);
   }
 
   renderPromptList(elements.search.value);
@@ -141,10 +141,29 @@ function newPrompt() {
   elements.promptTitle.focus();
 }
 
+function copyPrompt() {
+  const content = elements.promptContent.innerText.trim();
+
+  if (!content) {
+    alert("Não há conteúdo para copiar!");
+    return;
+  }
+
+  navigator.clipboard
+    .writeText(content)
+    .then(() => {
+      alert("Conteúdo copiado para a área de transferência!");
+    })
+    .catch((error) => {
+      console.error("Erro ao copiar para a área de transferência: ", error);
+    });
+}
+
 elements.btnOpen.addEventListener("click", openSidebar);
 elements.btnCollapse.addEventListener("click", closeSidebar);
 elements.btnSave.addEventListener("click", save);
 elements.btnNew.addEventListener("click", newPrompt);
+elements.btnCopy.addEventListener("click", copyPrompt);
 
 elements.search.addEventListener("input", function (event) {
   renderPromptList(event.target.value);
@@ -183,7 +202,13 @@ function init() {
   load();
   renderPromptList("");
   attachAllEditableHandlers();
-  openSidebar();
+  updateAllEditableStates();
+
+  elements.sidebar.classList.remove("open");
+  elements.sidebar.classList.remove("collapsed");
+
+  elements.btnOpen.addEventListener("click", openSidebar);
+  elements.btnCollapse.addEventListener("click", closeSidebar);
 }
 
 // Executa a inicialização ao carregar o script
